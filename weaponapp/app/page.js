@@ -12,9 +12,8 @@ import {
 import '@xyflow/react/dist/style.css';
 import { readInfo } from './lib/infoReader';
 import Dagre from '@dagrejs/dagre';
-import React, { useCallback,useEffect,useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import { WeaponNode } from './components/weapon-tree/weaponNode';
-
 
 const info = readInfo();
 const all_nodes = info.nodes
@@ -49,24 +48,28 @@ const getLayoutedElements = (nodes, edges) => {
   };
 };
 
-const useLayout = () => {
+const LayoutFlow = () => {
   const { fitView } = useReactFlow();
   const [nodes, setNodes, onNodesChange] = useNodesState(all_nodes[5]);
   const [edges, setEdges, onEdgesChange] = useEdgesState(all_edges[5]);
-  const layouted = getLayoutedElements(nodes, edges);
+  const customTypes = useMemo(() => {
+    const types = { weapon: WeaponNode };
+    return types;
+  }, []);
+  const layoutDone = useRef(false);
 
-  setNodes([...layouted.nodes]);
-  setEdges([...layouted.edges]);
-
-  fitView();
-}
-
-const LayoutFlow = () => {
-  const [nodes, setNodes, onNodesChange] = useNodesState(all_nodes[5]);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(all_edges[5]);
-  const nodeTypes = useMemo(() => ({
-    weapon: WeaponNode
-  }, []))
+  useEffect(() => {
+    if (!layoutDone.current) {
+      const hasMeasured = nodes.every((node) => node.measured);
+      if (hasMeasured) {
+        const layouted = getLayoutedElements(nodes, edges);
+        setNodes([...layouted.nodes]);
+        setEdges([...layouted.edges]);
+        fitView();
+        layoutDone.current = true;
+      }
+    }
+  }, [nodes, edges, fitView]);
 
   return (
     <ReactFlow
@@ -74,7 +77,7 @@ const LayoutFlow = () => {
       edges={edges}
       onNodesChange={onNodesChange}
       onEdgesChange={onEdgesChange}
-      nodeTypes={nodeTypes}
+      nodeTypes={customTypes}
       fitView
     >
     </ReactFlow>
@@ -82,9 +85,6 @@ const LayoutFlow = () => {
 };
 
 export default function Home() {
-  useEffect(() => {
-    useLayout();
-  });
   return (
     <div style={{ width: '100vw', height: '100vh' }}>
       <ReactFlowProvider>

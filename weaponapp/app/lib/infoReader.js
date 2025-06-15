@@ -18,7 +18,7 @@ export function readInfo() {
             })
             for(const up of data[i][name]['upgrades']) {
                 edges.push({
-                    id:id_t,
+                    id:String(id_t),
                     source: name,
                     target: up
                 })
