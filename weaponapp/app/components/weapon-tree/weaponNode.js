@@ -2,21 +2,15 @@
 // WeaponNode.js - Updated custom node
 'use client';
 
+import styles from './WeaponNode.module.css'
+
 import React from 'react';
 import { Handle, Position } from '@xyflow/react';
 
 const WeaponNode = ({ data }) => {
   return (
     <div 
-      className="custom-node"
-      style={{
-        padding: '10px',
-        border: '1px solid #ccc',
-        borderRadius: '5px',
-        background: '#fff',
-        minWidth: '120px',
-        textAlign: 'center'
-      }}
+      className={styles.node}
     >
       <div>{data.label}</div>
       <Handle 

@@ -90,6 +90,9 @@ const LayoutFlow = ({ nodeData, edgeData }) => {
             nodeTypes={customTypes}
             edgeTypes={customEdges}
             fitView
+            nodesDraggable={false}
+            nodesConnectable={false}
+            edgesFocusable={false}
         >{loading && (
                 <div style={{
                     position: 'absolute',

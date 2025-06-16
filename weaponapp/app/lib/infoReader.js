@@ -15,14 +15,16 @@ export function readInfo() {
                 id: name,
                 position: { x: i * 300, y: cnt * 50 },
                 data: { label: name },
-                type: 'weapon'
+                type: 'weapon',
+                deletable:false
             })
             for (const up of data[i][name]['upgrades']) {
                 edges.push({
                     id: String(id_t),
                     source: name,
                     target: up,
-                    type: 'WeaponEdge'
+                    type: 'WeaponEdge',
+                    deletable:false
                 })
                 id_t++;
             }
