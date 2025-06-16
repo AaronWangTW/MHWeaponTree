@@ -1,1 +1,24 @@
 @import "tailwindcss";
+
+.react-flow__pane,
+.react-flow__viewport,
+.react-flow__container {
+  cursor: none !important;
+}
+
+@keyframes spin-reverse {
+  from {
+    transform: rotate(360deg);
+  }
+  to {
+    transform: rotate(0deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin 2s linear infinite;
+}
+
+.animate-spin-slow-reverse {
+  animation: spin 2s linear infinite;
+}

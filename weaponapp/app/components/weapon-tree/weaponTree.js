@@ -1,5 +1,7 @@
 'use client';
 
+import styles from './weaponTree.module.css'
+
 import {
     ReactFlow,
     ReactFlowProvider,
@@ -11,6 +13,7 @@ import '@xyflow/react/dist/style.css';
 import Dagre from '@dagrejs/dagre';
 import React, { useState,useEffect, useMemo, useRef } from 'react';
 import { WeaponNode } from './weaponNode';
+import WeaponEdge from './WeaponEdge';
 
 const getLayoutedElements = (nodes, edges) => {
     const g = new Dagre.graphlib.Graph().setDefaultEdgeLabel(() => ({}));
@@ -47,6 +50,10 @@ const LayoutFlow = ({ nodeData, edgeData }) => {
         const types = { weapon: WeaponNode };
         return types;
     }, []);
+    const customEdges = useMemo(() => {
+        const types = { 'WeaponEdge': WeaponEdge };
+        return types;
+    }, []);
     const layoutDone = useRef(false);
     const [loading, setLoading] = useState(false);
     const [nodes, setNodes, onNodesChange] = useNodesState(nodeData);
@@ -61,7 +68,8 @@ const LayoutFlow = ({ nodeData, edgeData }) => {
     useEffect(() => {
         if (!layoutDone.current) {
             const hasMeasured = nodes.every((node) => node.measured);
-            if (hasMeasured) {
+            setTimeout(() => {
+                if (hasMeasured) {
                 const layouted = getLayoutedElements(nodes, edges);
                 setNodes([...layouted.nodes]);
                 setEdges([...layouted.edges]);
@@ -69,6 +77,7 @@ const LayoutFlow = ({ nodeData, edgeData }) => {
                 layoutDone.current = true;
                 setLoading(false);
             }
+            }, 50);
         }
     }, [nodes, edges, setNodes, setEdges, fitView]);
 
@@ -79,6 +88,7 @@ const LayoutFlow = ({ nodeData, edgeData }) => {
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
             nodeTypes={customTypes}
+            edgeTypes={customEdges}
             fitView
         >{loading && (
                 <div style={{
@@ -104,9 +114,9 @@ const LayoutFlow = ({ nodeData, edgeData }) => {
 
 export default function WeaponTree({ nodeData, edgeData }) {
     return (
-        <div style={{ width: '100vw', height: '100vh' }}>
+        <div style={{ width: '100vw', height: '100vh'}} className={styles.page}>
             <ReactFlowProvider>
-                <LayoutFlow nodeData={nodeData} edgeData={edgeData} />
+                <LayoutFlow nodeData={nodeData} edgeData={edgeData} className="cursor-none"/>
             </ReactFlowProvider>
         </div>
     );
