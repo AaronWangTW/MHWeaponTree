@@ -8,13 +8,13 @@ import React from 'react';
 import { Handle, Position } from '@xyflow/react';
 
 const SHARPNESS_COLORS = {
-  red: '#ff0000',
-  orange: '#ff7f00',
-  yellow: '#ffff00',
-  green: '#00ff00',
-  blue: '#0000ff',
-  white: '#ffffff',
-  purple: '#800080',
+  red: '#9e2c24',
+  orange: '#bf6730',
+  yellow: '#dec03c',
+  green: '#91cf36',
+  blue: '#2e52bf',
+  white: '#e6e6e6',
+  purple: '#751fad',
 };
 
 const WeaponNode = ({ data }) => {
