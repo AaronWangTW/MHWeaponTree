@@ -14,9 +14,15 @@ export function readInfo() {
             nodes.push({
                 id: name,
                 position: { x: i * 300, y: cnt * 50 },
-                data: { label: name },
+                data: { 
+                    label: name,
+                    attack: data[i][name]['attack'],
+                    affinity: data[i][name]['affinity'],
+                    element: data[i][name]['element'],
+                    sharpness: data[i][name]['sharpness']
+                },
                 type: 'weapon',
-                deletable:false
+                deletable:false,
             })
             for (const up of data[i][name]['upgrades']) {
                 edges.push({

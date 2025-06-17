@@ -32,7 +32,7 @@ async def fetch_weapon_links(playwright, weapon_type_id):
     browser = await playwright.chromium.launch()
     page = await browser.new_page()
     url = f"https://mhworld.kiranico.com/en/weapons?type={weapon_type_id}"
-    await page.goto(url,wait_until="domcontentloaded", timeout=60000)
+    await page.goto(url,wait_until="domcontentloaded", timeout=120000)
     await page.wait_for_selector("tr a")
 
     links = await page.locator("tr a").all()
@@ -84,8 +84,54 @@ async def fetch_weapon_info(p, weapon_type_id, links, fetched_links):
             if await link_el.count() > 0:
                 up_name = await link_el.text_content()
                 upgrades.append(up_name.strip())
-        info[name] = {}
-        info[name]['upgrades'] = upgrades
+        
+        attack = affinity = element = None
+        stat_table = page.locator('xpath=//*[@id="app"]/div/div/div[3]/div[3]/div[1]/div[2]/div/div[2]/div/div[2]/div/table')
+        stat_cells = await stat_table.locator("td").all()
+
+        sharpness = {"base": {}, "max": {}}
+        color_order = ["red", "orange", "yellow", "green", "blue", "white", "purple"]
+
+        for cell in stat_cells:
+            has_strong = await cell.locator("strong").count() > 0
+            has_div = await cell.locator("div").count() > 0
+            if not (has_strong and has_div):
+                continue  # not a valid stat cell
+
+            label_el = cell.locator(">div")
+            label_text = (await label_el.inner_text()).strip().lower()
+
+            value_el = cell.locator("strong")
+            value_text = (await value_el.inner_text()).strip()
+
+            if label_text == "attack":
+                attack = value_text
+            elif label_text == "affinity":
+                affinity = value_text
+            elif label_text == "element":
+                element = value_text
+            elif label_text == "sharpness":
+                sharpness_bars = await value_el.locator(">div").all()
+                if len(sharpness_bars) < 2:
+                    sharpness = None
+                    continue
+                for idx, key in enumerate(["base", "max"]):
+                    bar_divs = await sharpness_bars[idx].locator("div.d-flex > div").all()
+                    for div in bar_divs:
+                        class_name = await div.get_attribute("class")
+                        style = await div.get_attribute("style")
+                        color = next((c for c in color_order if f"sharpness-{c}" in class_name), None)
+                        if color and "width" in style:
+                            width_px = float(style.split("width:")[1].replace("px;", "").strip())
+                            sharpness[key][color] = width_px
+        
+        info[name] = {
+            "attack": attack,
+            "affinity": affinity,
+            "element": element,
+            "upgrades": upgrades,
+            "sharpness" : sharpness
+        }
         fetched_links[weapon_type_id].add(l)
 
     await browser.close()

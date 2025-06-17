@@ -44,7 +44,7 @@ const getLayoutedElements = (nodes, edges) => {
     };
 };
 
-const LayoutFlow = ({ nodeData, edgeData }) => {
+const LayoutFlow = ({ nodeData, edgeData,nodeClick }) => {
     const { fitView } = useReactFlow();
     const customTypes = useMemo(() => {
         const types = { weapon: WeaponNode };
@@ -90,6 +90,7 @@ const LayoutFlow = ({ nodeData, edgeData }) => {
             nodeTypes={customTypes}
             edgeTypes={customEdges}
             fitView
+            onNodeClick={nodeClick}
             nodesDraggable={false}
             nodesConnectable={false}
             edgesFocusable={false}
@@ -115,11 +116,11 @@ const LayoutFlow = ({ nodeData, edgeData }) => {
     );
 };
 
-export default function WeaponTree({ nodeData, edgeData }) {
+export default function WeaponTree({ nodeData, edgeData, nodeClick}) {
     return (
         <div style={{ width: '100vw', height: '100vh'}} className={styles.page}>
             <ReactFlowProvider>
-                <LayoutFlow nodeData={nodeData} edgeData={edgeData} className="cursor-none"/>
+                <LayoutFlow nodeData={nodeData} edgeData={edgeData} nodeClick={nodeClick} className="cursor-none"/>
             </ReactFlowProvider>
         </div>
     );

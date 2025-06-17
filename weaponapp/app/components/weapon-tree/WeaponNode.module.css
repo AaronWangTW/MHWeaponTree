@@ -14,3 +14,24 @@
   background: linear-gradient(180deg, rgba(46, 110, 32, 1) 0%, rgba(48, 48, 48, 1) 100%);
   box-shadow: 0 0 8px 2px rgba(0, 255, 0, 0.4);
 }
+
+.label {
+  font-weight: bold;
+  margin-bottom: 6px;
+}
+
+.stats {
+  font-size: 12px;
+  line-height: 1.4;
+  margin-bottom: 6px;
+}
+
+.sharpnessBar {
+  display: flex;
+  height: 6px;
+  width: 100%;
+  border: 1px solid #555;
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: 4px;
+}

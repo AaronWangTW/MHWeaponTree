@@ -22,3 +22,7 @@
 .animate-spin-slow-reverse {
   animation: spin 2s linear infinite;
 }
+
+* {
+  cursor: none !important;
+}
