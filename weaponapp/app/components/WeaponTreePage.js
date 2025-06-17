@@ -5,6 +5,7 @@ import WeaponTree from './weapon-tree/weaponTree';
 import WeaponTypeSwitch from './weapon-tree/WeaponTypeSwitch';
 import WeaponDetailPanel from './weapon-details/WeaponDetailPanel';
 import CompareTray from './weapon-details/CompareTray';
+import ComparePanel from './weapon-details/ComparePanel';
 
 const info = readInfo();
 
@@ -51,6 +52,11 @@ export default function WeaponTreePage() {
         onCompare={() => setShowComparePanel(true)}
         onClear={clearCompare}
       />)}
+      <ComparePanel
+        open={showComparePanel}
+        onClose={() => setShowComparePanel(false)}
+        weapons={compareList}
+      />
     </div>
   );
 }
