@@ -55,7 +55,7 @@ export default function WeaponTreePage() {
       <ComparePanel
         open={showComparePanel}
         onClose={() => setShowComparePanel(false)}
-        weapons={compareList}
+        selectedWeapons={compareList}
       />
     </div>
   );
