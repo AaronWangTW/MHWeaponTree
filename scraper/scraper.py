@@ -46,7 +46,7 @@ async def fetch_weapon_links(playwright, weapon_type_id):
     print(f"Finished weapon num {weapon_type_id}")
     return weapon_type_id, sorted(weapon_links)
 
-async def fetch_weapon_info(p, weapon_type_id, links, fetched_links):
+async def fetch_weapon_info(p, weapon_type_id, links, fetched_links, file_write_lock):
     print(f"Getting weapon num {weapon_type_id} info")
     browser = await p.chromium.launch()
     page = await browser.new_page()
@@ -125,35 +125,34 @@ async def fetch_weapon_info(p, weapon_type_id, links, fetched_links):
                             width_px = float(style.split("width:")[1].replace("px;", "").strip())
                             sharpness[key][color] = width_px
         
-        info[name] = {
-            "attack": attack,
-            "affinity": affinity,
-            "element": element,
-            "upgrades": upgrades,
-            "sharpness" : sharpness
-        }
-        fetched_links[weapon_type_id].add(l)
+        async with file_write_lock:
+            if os.path.exists(INFO_FILE):
+                with open(INFO_FILE, "r", encoding="utf-8") as f:
+                    existing_info = json.load(f)
+            else:
+                existing_info = {}
 
-    await browser.close()
-    print(f"Finished weapon num {weapon_type_id} info")
-    if os.path.exists(INFO_FILE):
-        with open(INFO_FILE, "r", encoding="utf-8") as f:
-            existing_info = json.load(f)
-    else:
-        existing_info = {}
+            # Insert/update one weapon
+            existing_info.setdefault(str(weapon_type_id), {})[name] = {
+                "attack": attack,
+                "affinity": affinity,
+                "element": element,
+                "upgrades": upgrades,
+                "sharpness": sharpness
+            }
+            with open(INFO_FILE, "w", encoding="utf-8") as f:
+                json.dump(existing_info, f, indent=2, ensure_ascii=False)
 
-    existing_info[str(weapon_type_id)] = info
-    with open(INFO_FILE, "w", encoding="utf-8") as f:
-        json.dump(existing_info, f, indent=2, ensure_ascii=False)
+            # Save fetched link
+            fetched_links[weapon_type_id].add(l)
+            with open(FETCHED_LINKS_FILE, "w", encoding="utf-8") as f:
+                json.dump({k: list(v) for k, v in fetched_links.items()}, f, indent=2)
 
-    with open(FETCHED_LINKS_FILE, "w", encoding="utf-8") as f:
-        json.dump({k: list(v) for k, v in fetched_links.items()}, f, indent=2)
-
-    print(f"✅ Saved info for weapon type {weapon_type_id}: {weapon_mapping[weapon_type_id]}")
     return weapon_type_id
 
 async def main():
     all_weapons_links = {}
+    file_write_lock = asyncio.Lock()
     if os.path.exists(FETCHED_LINKS_FILE):
         with open(FETCHED_LINKS_FILE, "r", encoding="utf-8") as f:
             raw_fetched_links = json.load(f)
@@ -177,7 +176,7 @@ async def main():
             
     async with async_playwright() as p:
         tasks = [
-            fetch_weapon_info(p, i, all_weapons_links[i], fetched_links)
+            fetch_weapon_info(p, i, all_weapons_links[i], fetched_links, file_write_lock)
             for i in weapon_mapping
         ]
         await asyncio.gather(*tasks)
