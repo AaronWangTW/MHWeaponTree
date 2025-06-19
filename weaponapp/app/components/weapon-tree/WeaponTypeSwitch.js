@@ -15,7 +15,7 @@ export default function WeaponTypeSwitch({ onSelect, selected }) {
         >
           <Image
             unoptimized 
-            src={`/weapon_icons/weapon_type_${i}.png`}
+            src={`/MHWeaponTree/weapon_icons/weapon_type_${i}.png`}
             alt={`Weapon Type ${i}`}
             width={32}
             height={32}
