@@ -4,6 +4,7 @@ const nextConfig = {
     output: "export",  // <=== enables static exports
     reactStrictMode: true,
     assetPrefix: '/weaponapp',
+    trailingSlash: true,
 };
 
 export default nextConfig;
