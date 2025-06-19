@@ -50,11 +50,12 @@ async def fetch_weapon_info(p, weapon_type_id, links, fetched_links, file_write_
     print(f"Getting weapon num {weapon_type_id} info")
     browser = await p.chromium.launch()
     page = await browser.new_page()
-    info = {}
     if weapon_type_id in [12, 13]:  # Bowguns
         upgrade_table_xpath = 'xpath=//*[@id="app"]/div/div/div[3]/div[3]/div[1]/div[5]/div[1]/div/table'
+        cost_table_path = 'xpath=//*[@id="app"]/div/div/div[3]/div[3]/div[1]/div[5]/div[2]/div/table'
     else:
         upgrade_table_xpath = 'xpath=//*[@id="app"]/div/div/div[3]/div[3]/div[1]/div[4]/div[1]/div/table'
+        cost_table_path = 'xpath=//*[@id="app"]/div/div/div[3]/div[3]/div[1]/div[4]/div[2]/div[2]/table'
     for l in tqdm(links, desc=f"Weapon {weapon_type_id:02d}: {weapon_mapping[weapon_type_id]}", leave=False):
         if l in fetched_links[weapon_type_id]:
             print(f"Skipping cached weapon link: {l}")
@@ -85,9 +86,10 @@ async def fetch_weapon_info(p, weapon_type_id, links, fetched_links, file_write_
                 up_name = await link_el.text_content()
                 upgrades.append(up_name.strip())
         
-        attack = affinity = element = None
+        attack = affinity = element = rarity = None
         stat_table = page.locator('xpath=//*[@id="app"]/div/div/div[3]/div[3]/div[1]/div[2]/div/div[2]/div/div[2]/div/table')
         stat_cells = await stat_table.locator("td").all()
+        slots = [0,0,0,0]
 
         sharpness = {"base": {}, "max": {}}
         color_order = ["red", "orange", "yellow", "green", "blue", "white", "purple"]
@@ -110,6 +112,8 @@ async def fetch_weapon_info(p, weapon_type_id, links, fetched_links, file_write_
                 affinity = value_text
             elif label_text == "element":
                 element = value_text
+            elif label_text == "rarity":
+                rarity = value_text
             elif label_text == "sharpness":
                 sharpness_bars = await value_el.locator(">div").all()
                 if len(sharpness_bars) < 2:
@@ -124,6 +128,33 @@ async def fetch_weapon_info(p, weapon_type_id, links, fetched_links, file_write_
                         if color and "width" in style:
                             width_px = float(style.split("width:")[1].replace("px;", "").strip())
                             sharpness[key][color] = width_px
+            elif label_text == "slots":
+                imgs = await value_el.locator(">img").all()
+                for img in imgs:
+                    img_name = (await img.get_attribute("src")).split('/')[-1][:-4]
+                    slots[int(img_name[-1])-1] += 1
+
+        costs = {
+            "forge":[],
+            "upgrade":[],
+            "money":0
+        }
+
+        cost_table = page.locator(cost_table_path)
+        cost_rows = await cost_table.locator("tr").all()
+
+        for [idx,key] in enumerate(cost_rows):
+            if(idx == 0):
+                costs['money'] = int((await(await key.locator('td').all())[1].inner_text())[:-1].replace(',', ''))
+            else:
+                cells = await key.locator('td').all()
+                cost_type = await cells[0].inner_text()
+                cost_item = await cells[1].inner_text()
+                cost_amount = int((await cells[2].inner_text())[1:].replace(',', ''))
+                if "Forge" in cost_type:
+                    costs["forge"].append([cost_item,cost_amount])
+                else:
+                    costs["upgrade"].append([cost_item,cost_amount])
         
         async with file_write_lock:
             if os.path.exists(INFO_FILE):
@@ -138,7 +169,10 @@ async def fetch_weapon_info(p, weapon_type_id, links, fetched_links, file_write_
                 "affinity": affinity,
                 "element": element,
                 "upgrades": upgrades,
-                "sharpness": sharpness
+                "sharpness": sharpness,
+                "rarity": rarity,
+                "slots":slots,
+                "costs":costs
             }
             with open(INFO_FILE, "w", encoding="utf-8") as f:
                 json.dump(existing_info, f, indent=2, ensure_ascii=False)

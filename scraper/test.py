@@ -5,16 +5,16 @@ with sync_playwright() as p:
     browser = p.chromium.launch()
     page = browser.new_page()
     info = {}
-    page.goto("https://mhworld.kiranico.com/en/weapons/lkHWibw/chrome-deathscythe-iii",wait_until="domcontentloaded", timeout=60000)
+    page.goto("https://mhworld.kiranico.com/en/weapons/67I7ij/iron-assault-i",wait_until="domcontentloaded", timeout=60000)
 
     
     name_element = page.locator('xpath=//*[@id="app"]/div/div/div[3]/div[3]/div[1]/div[2]/div/div[1]/div[1]/h5/div/div[2]')
     name = name_element.text_content()
 
     upgrades = []
-    upgrade_table_xpath = 'xpath=//*[@id="app"]/div/div/div[3]/div[3]/div[1]/div[4]/div[1]/div/table'
-    #upgrade_table = page.locator('xpath=//*[@id="app"]/div/div/div[3]/div[3]/div[1]/div[5]/div[1]/div/table')
-    upgrade_table = page.locator(upgrade_table_xpath)
+    #upgrade_table_xpath = 'xpath=//*[@id="app"]/div/div/div[3]/div[3]/div[1]/div[4]/div[1]/div/table'
+    upgrade_table = page.locator('xpath=//*[@id="app"]/div/div/div[3]/div[3]/div[1]/div[5]/div[1]/div/table')
+    #upgrade_table = page.locator(upgrade_table_xpath)
     rows = upgrade_table.locator("tbody tr").all()
     found_index = None
     # getting the index of the current weapon. All upgrades are below it
@@ -34,7 +34,8 @@ with sync_playwright() as p:
 
     print(upgrades)
 
-    attack = affinity = element = None
+    attack = affinity = element = rarity = None
+    slots = [0,0,0,0]
     stat_table = page.locator('xpath=//*[@id="app"]/div/div/div[3]/div[3]/div[1]/div[2]/div/div[2]/div/div[2]/div/table')
     stat_cells = stat_table.locator("td").all()
 
@@ -61,6 +62,8 @@ with sync_playwright() as p:
             affinity = value_text
         elif label_text == "element":
             element = value_text
+        elif label_text == "rarity":
+            rarity = value_text
         elif label_text == "sharpness":
             sharpness_bars = value_el.locator(">div").all()
             if len(sharpness_bars) < 2:
@@ -76,13 +79,47 @@ with sync_playwright() as p:
                     if color and "width" in style:
                         width_px = float(style.split("width:")[1].replace("px;", "").strip())
                         sharpness[key][color] = width_px
+        elif label_text == "slots":
+            imgs = value_el.locator(">img").all()
+            for img in imgs:
+                img_name = img.get_attribute("src").split('/')[-1][:-4]
+                slots[int(img_name[-1])-1] += 1
+
+    costs = {
+        "forge":[],
+        "upgrade":[],
+        "money":0
+    }
+
+    #melee_cost_table = 'xpath=//*[@id="app"]/div/div/div[3]/div[3]/div[1]/div[4]/div[2]/div[2]/table'
+    gun_cost_table = '//*[@id="app"]/div/div/div[3]/div[3]/div[1]/div[5]/div[2]/div/table'
+
+    cost_table = page.locator(gun_cost_table)
+    cost_rows = cost_table.locator("tr").all()
+
+    for [idx,key] in enumerate(cost_rows):
+        if(idx == 0):
+            costs['money'] = int(key.locator('td').all()[1].inner_text()[:-1].replace(',', ''))
+        else:
+            cells = key.locator('td').all()
+            cost_type = cells[0].inner_text()
+            cost_item = cells[1].inner_text()
+            cost_amount = int(cells[2].inner_text()[1:].replace(',', ''))
+            if "Forge" in cost_type:
+                costs["forge"].append([cost_item,cost_amount])
+            else:
+                costs["upgrade"].append([cost_item,cost_amount])
+
     
     info[name] = {
         "attack": attack,
         "affinity": affinity,
         "element": element,
         "upgrades": upgrades,
-        "sharpness" : sharpness
+        "sharpness" : sharpness,
+        "rarity": rarity,
+        "slots": slots,
+        "costs":costs
     }
     print(info)
 
