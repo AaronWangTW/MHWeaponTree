@@ -14,6 +14,7 @@ export default function WeaponTypeSwitch({ onSelect, selected }) {
           onClick={() => onSelect(i)}
         >
           <Image
+            unoptimized 
             src={`/weapon_icons/weapon_type_${i}.png`}
             alt={`Weapon Type ${i}`}
             width={32}
