@@ -28,6 +28,18 @@ function compareSharpness(s1, s2) {
   return s1[c1] > s2[c2] ? 1 : (s1[c1] < s2[c2] ? -1 : 0);
 }
 
+function compareSlots(s1 = [], s2 = []) {
+  const max1 = s1.map((count, i) => count > 0 ? i + 1 : 0).reduce((a, b) => Math.max(a, b), 0);
+  const max2 = s2.map((count, i) => count > 0 ? i + 1 : 0).reduce((a, b) => Math.max(a, b), 0);
+
+  if (max1 !== max2) return max1 > max2 ? 'left' : 'right';
+
+  const max1Count = s1[max1 - 1] || 0;
+  const max2Count = s2[max2 - 1] || 0;
+
+  return max1Count > max2Count ? 'left' : (max1Count < max2Count ? 'right' : 'equal');
+}
+
 export default function ComparePanel({ open, onClose, selectedWeapons }) {
   const [leftIndex, setLeftIndex] = useState(0);
   const [rightIndex, setRightIndex] = useState(1);
@@ -42,7 +54,8 @@ export default function ComparePanel({ open, onClose, selectedWeapons }) {
       affinity: parseInt(left.affinity) > parseInt(right.affinity) ? 'left' : (parseInt(left.affinity) < parseInt(right.affinity) ? 'right' : 'equal'),
       element: parseElementValue(left.element) > parseElementValue(right.element) ? 'left' : (parseElementValue(left.element) < parseElementValue(right.element) ? 'right' : 'equal'),
       sharpnessBase: compareSharpness(left.sharpness?.base, right.sharpness?.base) === 1 ? 'left' : (compareSharpness(left.sharpness?.base, right.sharpness?.base) === -1 ? 'right' : 'equal'),
-      sharpnessMax: compareSharpness(left.sharpness?.max, right.sharpness?.max) === 1 ? 'left' : (compareSharpness(left.sharpness?.max, right.sharpness?.max) === -1 ? 'right' : 'equal')
+      sharpnessMax: compareSharpness(left.sharpness?.max, right.sharpness?.max) === 1 ? 'left' : (compareSharpness(left.sharpness?.max, right.sharpness?.max) === -1 ? 'right' : 'equal'),
+      slots: compareSlots(left.slots, right.slots)
     };
   }, [left, right]);
 
@@ -89,7 +102,7 @@ export default function ComparePanel({ open, onClose, selectedWeapons }) {
           ))}
         </div>
 
-        <table className="w-full text-white text-sm table-fixed border-separate border-spacing-x-4">
+        <table className="w-full text-white text-sm table-fixed border-separate border-spacing-x-4 border-spacing-y-3">
           <thead>
             <tr>
               <th className="w-1/3 text-left">{left?.label}</th>
@@ -98,6 +111,11 @@ export default function ComparePanel({ open, onClose, selectedWeapons }) {
             </tr>
           </thead>
           <tbody>
+            <tr>
+              <td><span className="text-gray-400 mr-2">{left?.rarity}</span></td>
+              <td className="text-center"></td>
+              <td className="text-right"><span className="text-gray-400 ml-2">{right?.rarity}</span></td>
+            </tr>
             <tr>
               <td><span className="text-gray-400 mr-2">Attack:</span>{left?.attack}</td>
               <td className="text-center">{comparisons.attack === 'left' ? '←' : comparisons.attack === 'right' ? '→' : '='}</td>
@@ -135,6 +153,19 @@ export default function ComparePanel({ open, onClose, selectedWeapons }) {
                 <SharpnessBar sharpness={right?.sharpness?.max} />
               </td>
             </tr>
+            <tr>
+  <td className="align-top">
+    <div className="text-xs text-gray-400 mb-1">Slots</div>
+    <SlotDisplay slots={left?.slots} />
+  </td>
+  <td className="text-center align-middle">
+    {comparisons.slots === 'left' ? '←' : comparisons.slots === 'right' ? '→' : '='}
+  </td>
+  <td className="text-right align-top">
+    <div className="text-xs text-gray-400 mb-1">Slots</div>
+    <SlotDisplay slots={right?.slots} align="right" />
+  </td>
+</tr>
           </tbody>
         </table>
       </div>
@@ -159,6 +190,23 @@ function SharpnessBar({ sharpness }) {
           />
         )
       ))}
+    </div>
+  );
+}
+
+function SlotDisplay({ slots = [], align = 'left' }) {
+  return (
+    <div className={`flex ${align === 'right' ? 'justify-end' : 'justify-start'} gap-1`}>
+      {slots.flatMap((count, i) =>
+        Array.from({ length: count }, (_, idx) => (
+          <img
+            key={`slot-${i + 1}-${idx}`}
+            src={`/slot_icons/slot${i + 1}.png`}
+            alt={`Slot Level ${i + 1}`}
+            className="w-5 h-5"
+          />
+        ))
+      )}
     </div>
   );
 }

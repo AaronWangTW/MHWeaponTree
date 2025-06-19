@@ -19,7 +19,10 @@ export function readInfo() {
                     attack: data[i][name]['attack'],
                     affinity: data[i][name]['affinity'],
                     element: data[i][name]['element'],
-                    sharpness: data[i][name]['sharpness']
+                    sharpness: data[i][name]['sharpness'],
+                    rarity:data[i][name]['rarity'],
+                    slots: data[i][name]['slots'],
+                    costs: data[i][name]['costs']
                 },
                 type: 'weapon',
                 deletable:false,

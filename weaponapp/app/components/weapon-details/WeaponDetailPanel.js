@@ -19,6 +19,7 @@ export default function WeaponDetailPanel({ isOpen, onClose, weapon, onAddToComp
 
         {weapon ? (
           <div className="p-4 space-y-3 text-sm">
+            <div><strong>{weapon.rarity}</strong></div>
             <div><strong>Attack:</strong> {weapon.attack}</div>
             <div><strong>Affinity:</strong> {weapon.affinity}</div>
             <div><strong>Element:</strong> {weapon.element}</div>
@@ -32,6 +33,57 @@ export default function WeaponDetailPanel({ isOpen, onClose, weapon, onAddToComp
                 <SharpnessBar sharpness={weapon.sharpness?.max} />
               </div>
             </div>
+            <div>
+              <strong>Slots:</strong>
+              <div className="flex gap-1 mt-1">
+                {weapon.slots?.flatMap((count, i) =>
+                  Array.from({ length: count }, (_, idx) => (
+                    <img
+                      key={`slot-${i + 1}-${idx}`}
+                      src={`/slot_icons/slot${i + 1}.png`}
+                      alt={`Slot Level ${i + 1}`}
+                      className="w-6 h-6"
+                    />
+                  ))
+                )}
+              </div>
+            </div>
+            {weapon.costs && (
+              <div>
+                <strong>Crafting Cost:</strong>
+                <div className="mt-1 space-y-2 text-sm">
+                  <div className="text-yellow-300 font-semibold">
+                    {weapon.costs.money.toLocaleString()} zenny
+                  </div>
+
+                  {weapon.costs.forge?.length > 0 && (
+                    <div>
+                      <div className="text-xs text-gray-400 uppercase mb-1">Forge Materials</div>
+                      <ul className="list-disc list-inside">
+                        {weapon.costs.forge.map(([material, count], idx) => (
+                          <li key={`forge-${idx}`}>
+                            {material} x{count}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {weapon.costs.upgrade?.length > 0 && (
+                    <div>
+                      <div className="text-xs text-gray-400 uppercase mb-1">Upgrade Materials</div>
+                      <ul className="list-disc list-inside">
+                        {weapon.costs.upgrade.map(([material, count], idx) => (
+                          <li key={`upgrade-${idx}`}>
+                            {material} x{count}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
             {onAddToCompare && (
               <div className="p-4 border-t border-gray-700">
                 <button
