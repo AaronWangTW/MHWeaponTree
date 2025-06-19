@@ -1,9 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    basePath: "/weaponapp",
+    basePath: "/MHWeaponTree",
     output: "export",  // <=== enables static exports
     reactStrictMode: true,
-    assetPrefix: '/weaponapp',
+    assetPrefix: '/MHWeaponTree',
     trailingSlash: true,
 };
 
