@@ -40,7 +40,7 @@ export default function WeaponDetailPanel({ isOpen, onClose, weapon, onAddToComp
                   Array.from({ length: count }, (_, idx) => (
                     <img
                       key={`slot-${i + 1}-${idx}`}
-                      src={`/MHWeaponTree/slot_icons/slot${i + 1}.png`}
+                      src={`/slot_icons/slot${i + 1}.png`}
                       alt={`Slot Level ${i + 1}`}
                       className="w-6 h-6"
                     />
