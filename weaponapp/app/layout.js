@@ -1,5 +1,6 @@
 import "./globals.css";
 import CustomCursor from "./components/ui/CustomCursor";
+import { AppStateProvider } from './lib/AppStateProvider';
 
 export const metadata = {
   title: "Monster Hunter World Weapon Trees",
@@ -11,7 +12,9 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body className="cursor-none">
         <CustomCursor></CustomCursor>
-        {children}
+        <AppStateProvider>
+          {children}
+        </AppStateProvider>
       </body>
     </html>
   );
