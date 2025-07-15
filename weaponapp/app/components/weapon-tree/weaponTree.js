@@ -46,6 +46,7 @@ const getLayoutedElements = (nodes, edges) => {
 
 const LayoutFlow = ({ nodeData, edgeData,nodeClick }) => {
     const { fitView } = useReactFlow();
+    const { getNodes, setViewport } = useReactFlow();
     const customTypes = useMemo(() => {
         const types = { weapon: WeaponNode };
         return types;
@@ -73,7 +74,7 @@ const LayoutFlow = ({ nodeData, edgeData,nodeClick }) => {
                 const layouted = getLayoutedElements(nodes, edges);
                 setNodes([...layouted.nodes]);
                 setEdges([...layouted.edges]);
-                fitView();
+                
                 layoutDone.current = true;
                 setLoading(false);
             }
